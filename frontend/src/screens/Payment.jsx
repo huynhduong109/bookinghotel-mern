@@ -44,7 +44,7 @@ const Payment = () => {
         payBtn.current.disabled = true;
 
         try {
-            const { data } = await axios.post('/api/v1/stripeclientkey', { amount: bookingDetails?.totalPrice/25000 }, { headers: { "Content-Type": "application/json" } })
+            const { data } = await axios.post('/api/v1/stripeclientkey', { amount: bookingDetails?.totalPrice}, { headers: { "Content-Type": "application/json" } })
             const client_secret = data.client_secret;
 
             if (!stripe || !elements) return;
@@ -78,7 +78,7 @@ const Payment = () => {
                     }, bookingDetails.hotel, bookingDetails.room));
 
                 } else {
-                    dispatch(setError("There's some issue while processing payment "));
+                    dispatch(setError("There some issue while processing payment "));
                 }
             }
 

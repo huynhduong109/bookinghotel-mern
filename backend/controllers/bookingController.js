@@ -11,29 +11,28 @@ exports.createBooking = catchAsyncErrors(async(req, res, next) => {
 
     // validation of payment info
     const intent = await stripe.paymentIntents.retrieve(paymentInfo.id);
-    s
 
-    if (intent.status !== "succeeded" || intent.amount !== (totalPrice / 250)) {
-        return next(new ErrorHandler("Thông tin thanh toán không hợp lệ", 400));
+    if (intent.status !== "succeeded" || intent.amount !== (totalPrice / 25)) {
+        return next(new ErrorHandler("Invalid Payment Info", 400));
     }
 
     const hotel = await Hotel.findById(req.params.id);
     if (!hotel) {
-        return next(new ErrorHandler("Không tìm thấy khách sạn", 404));
+        return next(new ErrorHandler("Hotel not found", 404));
     }
 
     const room = await Room.findById(req.params.room);
     if (!room) {
-        return next(new ErrorHandler("Không tìm thấy phòng", 404))
+        return next(new ErrorHandler("Room not found", 404))
     }
 
     const isHotelsRoom = hotel.rooms.includes(room.id);
     if (!isHotelsRoom) {
-        return next(new ErrorHandler("Phòng không có sẵn trong khách sạn", 400))
+        return next(new ErrorHandler("This Room is not available in this hotel", 400))
     }
 
     if (dates.length < 1) {
-        return next(new ErrorHandler("Vui lòng chọn ngày đặt", 400))
+        return next(new ErrorHandler("Please insert booking dates", 400))
     }
 
     const isValidDate = dates.every((date) => Date.parse(new Date().toDateString()) <= Date.parse(new Date(date).toDateString()))
@@ -79,6 +78,7 @@ exports.createBooking = catchAsyncErrors(async(req, res, next) => {
         success: true
     })
 })
+
 
 exports.cancelBooking = catchAsyncErrors(async(req, res, next) => {
     const booking = await Booking.findById(req.params.id);
@@ -221,8 +221,8 @@ exports.sendStripeApiKey = catchAsyncErrors((req, res, next) => {
 // send stripe secret key
 exports.sendStripeSecretKey = catchAsyncErrors(async(req, res, next) => {
     const myPayment = await stripe.paymentIntents.create({
-        amount: (req.body.amount * 100),
-        currency: 'usd',
+        amount: (req.body.amount / 25),
+        currency: 'bdt',
         metadata: {
             company: 'LuxuryHotel'
         }
